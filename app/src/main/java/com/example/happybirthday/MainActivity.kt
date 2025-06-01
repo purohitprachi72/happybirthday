@@ -74,7 +74,6 @@ private fun lerp(start: Dp, stop: Dp, fraction: Float): Dp {
 
 @Composable
 fun GreetingWithAnimatedBackground(message: String, from: String) {
-    // ─── 1) Define a palette of 8 pastel colors ───────────────────────────────────
     val pastelPink  = Color(0xFFF8BBD0)
     val lavender    = Color(0xFFE6E6FA)
     val mintGreen   = Color(0xFFC8E6C9)
@@ -84,7 +83,6 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
     val softPeach   = Color(0xFFFFE0B2)
     val softYellow  = Color(0xFFFFF9C4)
 
-    // Flatten into a single list for cycling
     val allBgColors = listOf(
         pastelPink, lavender,
         mintGreen, pastelBlue,
@@ -92,16 +90,13 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
         softPeach, softYellow
     )
 
-    // Keep track of which color index is active (0..7)
     var bgColorIndex by remember { mutableIntStateOf(0) }
 
-    // Smoothly animate to the current target color over 1000ms
     val backgroundColor by animateColorAsState(
         targetValue = allBgColors[bgColorIndex],
         animationSpec = tween(durationMillis = 1000, easing = FastOutLinearInEasing)
     )
 
-    // Every 1 second, advance to the next color
     LaunchedEffect(Unit) {
         while (true) {
             delay(1000L)
@@ -109,7 +104,6 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
         }
     }
 
-    // ─── 2) Pulsing text and fading “from” ───────────────────────────────────────
     val textPulseTransition = rememberInfiniteTransition(label = "textPulse")
     val textScale by textPulseTransition.animateFloat(
         initialValue = 0.9f,
@@ -132,10 +126,8 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
         label = "fromAlphaAnimation"
     )
 
-    // ─── 3) Data class and rising‐balloon configs ─────────────────────────────────
     data class FloatingEmoji(val emoji: String, val xOffsetDp: Dp, val delayMs: Int)
 
-    // Ten balloons, each with a fixed horizontal offset and a staggered start delay
     val balloonConfigs = listOf(
 //        FloatingEmoji("🎈", xOffsetDp = (-132).dp, delayMs =   527),
         FloatingEmoji("🎈", xOffsetDp =   45.dp,   delayMs =  1834),
@@ -149,18 +141,15 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
 //        FloatingEmoji("🎈", xOffsetDp =   78.dp,   delayMs =   433)
     )
 
-    // One Animatable<Float> per balloon (0f = bottom, 1f = top)
     val animatables = remember {
         balloonConfigs.map { Animatable(0f) }
     }
 
-    // Every 5 seconds, restart all balloons’ rising animations
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         while (true) {
             balloonConfigs.forEachIndexed { index, config ->
                 scope.launch {
-                    // Snap to 0f (below screen) before each wave
                     animatables[index].snapTo(0f)
                     delay(config.delayMs.toLong()) // staggered delay
                     animatables[index].animateTo(
@@ -169,12 +158,10 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
                     )
                 }
             }
-            // Wait 5 seconds before launching the next wave
             delay(5000L)
         }
     }
 
-    // ─── 4) “Falling confetti” configs (unchanged infinite animation) ─────────────
     val fallingConfigs = listOf(
         FloatingEmoji("🎉", xOffsetDp = (-147).dp, delayMs = 1280),
         FloatingEmoji("🎊", xOffsetDp =   103.dp, delayMs =  320),
@@ -189,14 +176,12 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
         FloatingEmoji("🍫", xOffsetDp =  171.dp, delayMs =  290)
     )
 
-    // ─── 5) Draw everything in a single Box ──────────────────────────────────────
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor), // Crossfades every 1s
         contentAlignment = Alignment.Center
     ) {
-        // 5a) Rising balloons (use animatable.value to move from Y=+600.dp → Y=-800.dp)
         balloonConfigs.forEachIndexed { index, config ->
             val fraction = animatables[index].value
             val startY = 600.dp
@@ -212,7 +197,6 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
             )
         }
 
-        // 5b) Falling confetti (infinite loop)
         fallingConfigs.forEach { config ->
             val fallTransition = rememberInfiniteTransition(label = "fall${config.emoji}")
             val fallFraction by fallTransition.animateFloat(
@@ -240,7 +224,6 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
             )
         }
 
-        // 5c) Centered greeting text (no button)
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.Center,
