@@ -200,7 +200,7 @@ fun GreetingWithAnimatedBackground(message: String, from: String) {
         balloonConfigs.forEachIndexed { index, config ->
             val fraction = animatables[index].value
             val startY = 600.dp
-            val endY   = (-800).dp
+            val endY   = (-1200).dp
             val currentY = lerp(startY, endY, fraction)
 
             Text(
